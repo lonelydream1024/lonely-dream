@@ -18,7 +18,7 @@
             width: 100vw;
             height: 100vh;
             background: linear-gradient(#00CCFF, #35D7FF, #69E2FF, #9EECFF, #D2F7FF);
-
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -52,17 +52,12 @@
             border-radius: 50%;
             background-color: white;
             opacity: 0.8;
-            animation: twinkle 2s infinite ease-in-out alternate;
         }
 
         .star.yellow {
             background-color: #ffff99;
         }
 
-        @keyframes twinkle {
-            0% { opacity: 0.2; transform: scale(1); }
-            100% { opacity: 1; transform: scale(1.5); }
-        }
 
         #bigbox {
             width: 960px;
@@ -237,11 +232,35 @@
         .win-btn.close::after {
             transform: translate(-50%, -50%) rotate(-45deg);
         }
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 80px;
+            background: white;
+            opacity: 0.7;
+            transform: rotate(315deg);
+            animation: shooting 1s ease-out forwards;
+            z-index: 1;
+        }
 
+        @keyframes shooting {
+            0% {
+                transform: translate(0, 0) rotate(315deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(300px, 300px) rotate(315deg);
+                opacity: 0;
+            }
+        }
         @media (max-width: 768px) {
             #bigbox {
                 width: 90vw;
                 height: 90vh;
+            }
+
+            h1.title {
+                font-size: 28px; /* 이 줄만 유지하세요 */
             }
 
             #ie-box {
@@ -253,12 +272,8 @@
                 height: 50px;
             }
 
-            .taskbar-left {
+            .mobile-hide {
                 display: none;
-            }
-
-            h1.title {
-                font-size: 28px;
             }
         }
     </style>
@@ -281,7 +296,7 @@
 
             <div id="taskbar">
                 <div class="taskbar-left">
-                    버전 1.0.0 &nbsp;|&nbsp; © 2025 Lonely Dream&nbsp;&nbsp;-&nbsp;&nbsp;By 이연
+                    Ver. 1.0.0 &nbsp;|&nbsp; © 2025 Lonely Dream&nbsp;&nbsp;&nbsp;&nbsp;<span class="mobile-hide">- By 이연</span>
                 </div>
                 <div class="taskbar-right">
                     <a href="https://x.com/lonelydream1024" target="_blank" title="Twitter" class="win-btn social-btn">
@@ -294,6 +309,8 @@
     </main>
 
 <script>
+    let starsGenerated = false;
+
     function updateClock() {
         const now = new Date();
         const hours = now.getHours();
@@ -318,30 +335,68 @@
         }
     }
 
-    function generateStars() {
-        const starsContainer = document.querySelector('.stars');
-        starsContainer.innerHTML = ''; // 기존 별 제거
+        function updateBackground(hours) {
+            const bodyEl = document.getElementById('main');
+            const starsContainer = document.querySelector('.stars');
 
-        const numStars = 80;
-        for (let i = 0; i < numStars; i++) {
-            const star = document.createElement('div');
-            star.classList.add('star');
-
-            // 일부는 노란색 별
-            if (Math.random() < 0.3) {
-                star.classList.add('yellow');
+            if (hours >= 19 || hours < 7) {
+                bodyEl.classList.add('night-mode');
+                if (!starsGenerated) {
+                    generateStars();
+                    starsGenerated = true;
+                }
+            } else {
+                bodyEl.classList.remove('night-mode');
+                starsContainer.innerHTML = '';
+                starsGenerated = false;
             }
-
-            star.style.top = `${Math.random() * 100}%`;
-            star.style.left = `${Math.random() * 100}%`;
-            star.style.animationDuration = `${1.5 + Math.random() * 2}s`;
-
-            starsContainer.appendChild(star);
         }
-    }
+        function generateStars() {
+            const starsContainer = document.querySelector('.stars');
+            const numStars = 100;
 
-    updateClock();
-    setInterval(updateClock, 1000);
+            for (let i = 0; i < numStars; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                if (Math.random() < 0.3) {
+                    star.classList.add('yellow'); // 약간 노란 별들
+                }
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                starsContainer.appendChild(star);
+            }
+        }
+
+
+
+
+
+        function createShootingStar() {
+            const star = document.createElement('div');
+            star.classList.add('shooting-star');
+
+            // 랜덤한 위치 (상단 좌측 어딘가에서 시작)
+            star.style.top = `${Math.random() * 50}%`;
+            star.style.left = `${Math.random() * 50}%`;
+
+            document.querySelector('.stars').appendChild(star);
+
+            // 1초 후 제거
+            setTimeout(() => {
+                star.remove();
+            }, 1000);
+        }
+
+
+        updateClock();
+        setInterval(updateClock, 1000);
+        setInterval(() => {
+            const now = new Date();
+            const hour = now.getHours();
+            if (hour >= 19 || hour < 7) {
+                createShootingStar();
+            }
+        }, 1500);  // 3초 간격
 </script>
 </body>
 </html>
